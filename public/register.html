@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Alumni Student Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="navbar-content">
+      <a href="index.html" class="logo">Alumni Student Management System</a>
+      <div class="nav-buttons">
+        <a href="login.html" class="btn btn-primary">Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="form-container">
+    <div class="form-card">
+      <h2>Create Account</h2>
+      <p>Join our alumni network today</p>
+      <div id="errorMessage" class="error-message" style="display:none;"></div>
+
+      <form id="registerForm">
+        <div class="form-group">
+          <label>Register as</label>
+          <div class="radio-group">
+            <div class="radio-option">
+              <input type="radio" id="studentRadio" name="role" value="student" checked>
+              <label for="studentRadio">Student</label>
+            </div>
+            <div class="radio-option">
+              <input type="radio" id="alumniRadio" name="role" value="alumni">
+              <label for="alumniRadio">Alumni</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fullname">Full Name</label>
+          <input type="text" id="fullname" name="fullname" placeholder="John Doe" required>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Create a strong password" required>
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input type="text" id="phone" name="phone" placeholder="Enter phone number">
+        </div>
+
+
+        <!-- Student Fields -->
+        <div id="studentFields" class="role-fields">
+          <div class="form-group">
+            <label for="roll_number">Roll Number</label>
+            <input type="text" id="roll_number" name="roll_number" placeholder="Enter your roll number">
+          </div>
+          <div class="form-group">
+            <label for="department_id_student">Department</label>
+            <select id="department_id_student" name="department_id_student">
+              <option value="">Select Department</option>
+              <option value="1">Computer Science Engineering</option>
+              <option value="2">Electrical Engineering</option>
+              <option value="3">Mechanical Engineering</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="admission_year">Admission Year</label>
+            <input type="number" id="admission_year" name="admission_year" placeholder="e.g. 2021">
+          </div>
+          <div class="form-group">
+            <label for="graduation_year_student">Expected Graduation Year</label>
+            <input type="number" id="graduation_year_student" name="graduation_year_student" placeholder="e.g. 2025">
+          </div>
+          <div class="form-group">
+            <label for="current_semester">Current Semester</label>
+            <input type="number" id="current_semester" name="current_semester" placeholder="e.g. 6">
+          </div>
+        </div>
+
+        <!-- Alumni Fields -->
+        <div id="alumniFields" class="role-fields" style="display:none;">
+          <div class="form-group">
+            <label for="department_id_alumni">Department</label>
+            <select id="department_id_alumni" name="department_id_alumni">
+              <option value="">Select Department</option>
+              <option value="1">Computer Science Engineering</option>
+              <option value="2">Electrical Engineering</option>
+              <option value="3">Mechanical Engineering</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="year_of_pass">Year of Passing</label>
+            <input type="number" id="year_of_pass" name="year_of_pass" placeholder="e.g. 2015">
+          </div>
+          <div class="form-group">
+            <label for="current_job_title">Current Job Title</label>
+            <input type="text" id="current_job_title" name="current_job_title" placeholder="e.g. Software Engineer">
+          </div>
+          <div class="form-group">
+            <label for="company_name">Company Name</label>
+            <input type="text" id="company_name" name="company_name" placeholder="Company Name">
+          </div>
+          <div class="form-group">
+            <label for="location">Location</label>
+            <input type="text" id="location" name="location" placeholder="City, Country">
+          </div>
+          <div class="form-group">
+            <label for="linkedin_url">LinkedIn URL</label>
+            <input type="url" id="linkedin_url" name="linkedin_url" placeholder="https://linkedin.com/in/...">
+          </div>
+          <div class="form-group">
+            <label for="website_url">Website URL</label>
+            <input type="url" id="website_url" name="website_url" placeholder="https://...">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <button type="submit" class="btn btn-primary">Create Account</button>
+        </div>
+      </form>
+
+      <div class="form-footer">
+        Already have an account? <a href="login.html">Login here</a>
+      </div>
+    </div>
+  </div>
+  <script>
+    // --- Script to toggle between Student and Alumni fields ---
+    const studentRadio = document.getElementById('studentRadio');
+    const alumniRadio = document.getElementById('alumniRadio');
+    const studentFields = document.getElementById('studentFields');
+    const alumniFields = document.getElementById('alumniFields');
+
+    studentRadio.addEventListener('change', () => {
+        if(studentRadio.checked) {
+            studentFields.style.display = 'block';
+            alumniFields.style.display = 'none';
+        }
+    });
+
+    alumniRadio.addEventListener('change', () => {
+        if(alumniRadio.checked) {
+            studentFields.style.display = 'none';
+            alumniFields.style.display = 'block';
+        }
+    });
+
+    // --- Script to handle form submission ---
+    document.getElementById('registerForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const fullname = document.getElementById('fullname').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const phone = document.getElementById('phone').value;
+      const role = document.querySelector('input[name="role"]:checked').value;
+      const errorMessageDiv = document.getElementById('errorMessage');
+
+      errorMessageDiv.style.display = 'none';
+      errorMessageDiv.textContent = '';
+
+      let studentData = null;
+      let alumniData = null;
+
+      if (role === 'student') {
+        studentData = {
+          roll_number: document.getElementById('roll_number').value,
+          department_id: document.getElementById('department_id_student').value,
+          admission_year: document.getElementById('admission_year').value,
+          graduation_year: document.getElementById('graduation_year_student').value,
+          current_semester: document.getElementById('current_semester').value
+        };
+      } else if (role === 'alumni') {
+        alumniData = {
+          department_id: document.getElementById('department_id_alumni').value,
+          year_of_pass: document.getElementById('year_of_pass').value,
+          current_job_title: document.getElementById('current_job_title').value,
+          company_name: document.getElementById('company_name').value,
+          location: document.getElementById('location').value,
+          linkedin_url: document.getElementById('linkedin_url').value,
+          website_url: document.getElementById('website_url').value
+        };
+      }
+
+      const payload = { fullname, email, password, phone, role, studentData, alumniData };
+
+      try {
+        const res = await fetch('/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        
+        if (res.ok) { // Check if the response status is 2xx
+          alert('Registered successfully! Please login.');
+          window.location.href = '/login.html';
+        } else {
+          errorMessageDiv.textContent = data.message || 'Registration failed';
+          errorMessageDiv.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        errorMessageDiv.textContent = 'An error occurred. Please try again.';
+        errorMessageDiv.style.display = 'block';
+      }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Internship - Alumni Student Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles1.css">
+</head>
+<body>
+    
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Alumni Student Management System</div>
+            <div class="nav-buttons">
+                <a href="alumni-dashboard.html" class="btn btn-outline">Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+   
+    <div class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Post Internship Opportunity</h1>
+                <p>Share internship opportunities with talented students</p>
+            </div>
+
+            <!-- Upload Button Card -->
+            <div id="uploadCard" class="upload-card">
+                <div class="card-icon">💼</div>
+                <h2>Ready to Post an Internship?</h2>
+                <p>Help students gain valuable experience by posting internship opportunities at your company</p>
+                <button class="btn btn-primary" onclick="showForm()">Create Internship Post</button>
+            </div>
+
+            <!-- Internship Form -->
+            <div id="internshipForm" class="internship-form" style="display: none;">
+                <div class="form-card">
+                    <h2>Internship Details</h2>
+                    <p>Fill in the information below to post your internship</p>
+                    
+                    <form onsubmit="submitInternship(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="internshipName">Internship Title *</label>
+                                <input type="text" id="internshipName" name="internshipName" 
+                                       placeholder="e.g., Software Development Intern" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="granterName">Your Name *</label>
+                                <input type="text" id="granterName" name="granterName" 
+                                       placeholder="Alumni Name" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="companyName">Company Name *</label>
+                                <input type="text" id="companyName" name="companyName" 
+                                       placeholder="Company Name" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="location">Location *</label>
+                                <input type="text" id="location" name="location" 
+                                       placeholder="e.g., New York, NY / Remote" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="salary">Salary/Stipend *</label>
+                                <input type="text" id="salary" name="salary" 
+                                       placeholder="e.g., $20/hour or $2000/month" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="position">Position Type *</label>
+                                <input type="text" id="position" name="position" 
+                                       placeholder="e.g., Full-time, Part-time" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="duration">Duration *</label>
+                                <input type="text" id="duration" name="duration" 
+                                       placeholder="e.g., 3 months, 6 months" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="description">Job Description *</label>
+                            <textarea id="description" name="description" rows="4" 
+                                      placeholder="Describe the internship role, responsibilities, and what the intern will learn..." required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="requirements">Requirements *</label>
+                            <textarea id="requirements" name="requirements" rows="4" 
+                                      placeholder="List the required skills, qualifications, and experience..." required></textarea>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Post Internship</button>
+                            <button type="button" class="btn btn-outline" onclick="hideForm()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <div class="modal-icon">✓</div>
+            <h2>Success!</h2>
+            <p>Your internship has been posted successfully.</p>
+            <button class="btn btn-primary" onclick="closeModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        function showForm() {
+            document.getElementById('uploadCard').style.display = 'none';
+            document.getElementById('internshipForm').style.display = 'block';
+        }
+
+        function hideForm() {
+            document.getElementById('uploadCard').style.display = 'block';
+            document.getElementById('internshipForm').style.display = 'none';
+        }
+
+        function submitInternship(event) {
+            event.preventDefault();
+            
+            const formData = {
+                id: Date.now(),
+                internshipName: document.getElementById('internshipName').value,
+                granterName: document.getElementById('granterName').value,
+                companyName: document.getElementById('companyName').value,
+                location: document.getElementById('location').value,
+                salary: document.getElementById('salary').value,
+                position: document.getElementById('position').value,
+                duration: document.getElementById('duration').value,
+                description: document.getElementById('description').value,
+                requirements: document.getElementById('requirements').value,
+                postedDate: new Date().toISOString()
+            };
+
+           
+            const existingInternships = JSON.parse(localStorage.getItem('internships') || '[]');
+            existingInternships.push(formData);
+            localStorage.setItem('internships', JSON.stringify(existingInternships));
+
+         
+            document.getElementById('successModal').style.display = 'flex';
+
+           
+            event.target.reset();
+        }
+
+        function closeModal() {
+            document.getElementById('successModal').style.display = 'none';
+            hideForm();
+        }
+    </script>
+    <script>
+        function showForm() {
+  document.getElementById('uploadCard').style.display = 'none';
+  document.getElementById('internshipForm').style.display = 'block';
+}
+
+function hideForm() {
+  document.getElementById('uploadCard').style.display = 'block';
+  document.getElementById('internshipForm').style.display = 'none';
+}
+
+async function submitInternship(event) {
+  event.preventDefault();
+
+  const alumniId = localStorage.getItem("alumniId"); // make sure you store this after alumni login
+
+  const internshipData = {
+    alumni_id: alumniId,
+    title: document.getElementById('internshipName').value,
+    description: document.getElementById('description').value,
+    company_name: document.getElementById('companyName').value,
+    location: document.getElementById('location').value,
+    duration: document.getElementById('duration').value,
+    stipend: document.getElementById('salary').value,
+    deadline: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0], // auto 1 month deadline
+  };
+
+  try {
+    const res = await fetch("http://localhost:3000/api/internships", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(internshipData),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      document.getElementById('successModal').style.display = 'flex';
+      event.target.reset();
+    } else {
+      alert(data.error || "Failed to post internship");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error. Please try again later.");
+  }
+}
+
+function closeModal() {
+  document.getElementById('successModal').style.display = 'none';
+  hideForm();
+}
+
+    </script>
+    <footer class="footer">
+        <p>&copy; 2025 Alumni Student Management System. All rights reserved.</p>
+    </footer>
+</body>
+</html>

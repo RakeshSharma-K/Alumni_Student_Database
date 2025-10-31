@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Internships - Alumni Student Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles1.css">
+</head>
+<body>
+    
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Alumni Student Management System</div>
+            <div class="nav-buttons">
+                <a href="student-dashboard.html" class="btn btn-outline">Back to Dashboard</a>
+            </div>
+        </div>
+    </nav>
+
+   
+    <div class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Available Internships</h1>
+                <p>Explore and apply for internship opportunities posted by our alumni network</p>
+            </div>
+
+            
+            <div id="internshipsList" class="internships-list"></div>
+
+           
+            <div id="noInternships" class="no-data" style="display: none;">
+                <div class="card-icon">🔍</div>
+                <h2>No Internships Available Yet</h2>
+                <p>Check back soon! Alumni are constantly posting new opportunities.</p>
+            </div>
+        </div>
+    </div>
+
+   
+    <div id="applicationModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeApplicationModal()">&times;</span>
+            <div class="modal-icon">✓</div>
+            <h2>Application Submitted!</h2>
+            <p>Your application has been sent successfully.</p>
+            <button class="btn btn-primary" onclick="closeApplicationModal()">OK</button>
+        </div>
+    </div>
+
+    <script>
+        function loadInternships() {
+            const internships = JSON.parse(localStorage.getItem('internships') || '[]');
+            const appliedInternships = JSON.parse(localStorage.getItem('appliedInternships') || '[]');
+            const internshipsList = document.getElementById('internshipsList');
+            const noInternships = document.getElementById('noInternships');
+
+            if (internships.length === 0) {
+                noInternships.style.display = 'block';
+                return;
+            }
+
+            internshipsList.innerHTML = internships.map(internship => {
+                const hasApplied = appliedInternships.includes(internship.id);
+                const postedDate = new Date(internship.postedDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                });
+
+                return `
+                    <div class="internship-card">
+                        <div class="internship-header">
+                            <div>
+                                <h3>${internship.internshipName}</h3>
+                                <h4>${internship.companyName}</h4>
+                            </div>
+                            <div class="posted-date">Posted ${postedDate}</div>
+                        </div>
+
+                        <div class="internship-details">
+                            <div class="detail-item">
+                                <span class="detail-icon">📍</span>
+                                <span>${internship.location}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-icon">💰</span>
+                                <span>${internship.salary}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-icon">⏱️</span>
+                                <span>${internship.duration}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-icon">💼</span>
+                                <span>${internship.position}</span>
+                            </div>
+                        </div>
+
+                        <div class="internship-section">
+                            <h5>Description</h5>
+                            <p>${internship.description}</p>
+                        </div>
+
+                        <div class="internship-section">
+                            <h5>Requirements</h5>
+                            <p>${internship.requirements}</p>
+                        </div>
+
+                        <div class="internship-footer">
+                            <p class="posted-by">Posted by: <strong>${internship.granterName}</strong></p>
+                            <button 
+                                class="btn ${hasApplied ? 'btn-applied' : 'btn-primary'}" 
+                                onclick="applyForInternship(${internship.id})"
+                                ${hasApplied ? 'disabled' : ''}>
+                                ${hasApplied ? '✓ Applied' : 'Apply Now'}
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function applyForInternship(internshipId) {
+            const appliedInternships = JSON.parse(localStorage.getItem('appliedInternships') || '[]');
+            
+            if (!appliedInternships.includes(internshipId)) {
+                appliedInternships.push(internshipId);
+                localStorage.setItem('appliedInternships', JSON.stringify(appliedInternships));
+                
+            
+                document.getElementById('applicationModal').style.display = 'flex';
+                
+               
+                loadInternships();
+            }
+        }
+
+        function closeApplicationModal() {
+            document.getElementById('applicationModal').style.display = 'none';
+        }
+
+        
+        window.onload = loadInternships;
+    </script>
+    <script>
+        async function loadInternships() {
+  const internshipsList = document.getElementById('internshipsList');
+  const noInternships = document.getElementById('noInternships');
+  const studentId = localStorage.getItem("studentId");
+
+  try {
+    // Fetch internships from backend
+    const res = await fetch("http://localhost:3000/api/internships");
+    const internships = await res.json();
+
+    // Fetch student's applied internships
+    const appliedRes = await fetch(`http://localhost:3000/api/applications/${studentId}`);
+    const applied = await appliedRes.json();
+    const appliedInternshipIds = applied.map(a => a.internship_id);
+
+    if (internships.length === 0) {
+      noInternships.style.display = 'block';
+      return;
+    }
+
+    internshipsList.innerHTML = internships.map(internship => {
+      const hasApplied = appliedInternshipIds.includes(internship.id);
+      const postedDate = new Date(internship.posteddate).toLocaleDateString('en-US', {
+        month: 'short', day: 'numeric', year: 'numeric'
+      });
+
+      return `
+        <div class="internship-card">
+          <div class="internship-header">
+            <div>
+              <h3>${internship.internshipname}</h3>
+              <h4>${internship.companyname}</h4>
+            </div>
+            <div class="posted-date">Posted ${postedDate}</div>
+          </div>
+
+          <div class="internship-details">
+            <div class="detail-item"><span class="detail-icon">📍</span>${internship.location}</div>
+            <div class="detail-item"><span class="detail-icon">💰</span>${internship.salary}</div>
+            <div class="detail-item"><span class="detail-icon">⏱️</span>${internship.duration}</div>
+          </div>
+
+          <div class="internship-section">
+            <h5>Description</h5><p>${internship.description}</p>
+          </div>
+
+          <div class="internship-footer">
+            <p class="posted-by">Posted by: <strong>${internship.grantername}</strong></p>
+            <button class="btn ${hasApplied ? 'btn-applied' : 'btn-primary'}"
+              onclick="applyForInternship(${internship.id})"
+              ${hasApplied ? 'disabled' : ''}>
+              ${hasApplied ? '✓ Applied' : 'Apply Now'}
+            </button>
+          </div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    console.error(err);
+    alert("Failed to load internships.");
+  }
+}
+
+async function applyForInternship(internshipId) {
+  const studentId = localStorage.getItem("studentId");
+  const message = prompt("Enter a short message (optional):") || "";
+
+  try {
+    const res = await fetch(`http://localhost:3000/api/internships/${internshipId}/apply`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ student_id: studentId, message }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      document.getElementById('applicationModal').style.display = 'flex';
+      loadInternships();
+    } else {
+      alert(data.message || "Failed to apply.");
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Error applying for internship.");
+  }
+}
+
+function closeApplicationModal() {
+  document.getElementById('applicationModal').style.display = 'none';
+}
+
+window.onload = loadInternships;
+
+    </script>
+    <footer class="footer">
+        <p>&copy; 2025 Alumni Student Management System. All rights reserved.</p>
+    </footer>
+</body>
+</html>

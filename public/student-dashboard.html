@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Alumni Student Management System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="/socket.io/socket.io.js"></script>
+
+</head>
+<body>
+    
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div class="logo">Alumni Student Management System</div>
+            <div class="nav-buttons">
+                <a href="index.html" class="btn btn-outline">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    
+    <div class="dashboard">
+        <div class="container">
+            <div class="dashboard-header">
+                <h1>Student Dashboard</h1>
+                <h2 id="welcomeHeader" class="welcome-text"></h2>
+
+                <p>Welcome back! Here's your activity overview</p>
+            </div>
+
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">12</div>
+                    <div class="stat-label">Active Opportunities</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Upcoming Events</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">5</div>
+                    <div class="stat-label">Mentor Sessions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">8</div>
+                    <div class="stat-label">Achievements</div>
+                </div>
+            </div>
+
+            
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="card-icon">🏆</div>
+                    <h3>Post Achievements</h3>
+                    <p>Share your academic and extracurricular accomplishments with the community</p>
+                    <a href="#" class="btn btn-primary">Add Achievement</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">🎉</div>
+                    <h3>Alumni Events</h3>
+                    <p>Participate in networking events, workshops, and seminars organized by alumni</p>
+                    <a href="#" class="btn btn-primary">View Events</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">🎓</div>
+                    <h3>Scholarships</h3>
+                    <p>Browse and apply for scholarships offered by our generous alumni network</p>
+                    <a href="#" class="btn btn-primary">Browse Scholarships</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">💼</div>
+                    <h3>Internship Opportunities</h3>
+                    <p>Explore internship openings from companies connected with our alumni</p>
+                    <a href="apply-internship.html" class="btn btn-primary">Find Internships</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">🎥</div>
+                    <h3>Mentor Sessions</h3>
+                    <p>Join one-on-one or group mentorship sessions with experienced alumni</p>
+                    <a href="#" class="btn btn-primary">Join Session</a>
+                </div>
+
+                <div class="dashboard-card">
+                    <div class="card-icon">👥</div>
+                    <h3>Alumni Network</h3>
+                    <p>Connect with alumni professionals in your field of interest</p>
+                    <a href="#" class="btn btn-primary">Explore Network</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div class="chat-icon" id="chatIcon">💬</div>
+
+<div class="chat-main-container">
+    <!-- User List Sidebar -->
+    <div class="user-list-sidebar">
+        <h3>Chat</h3>
+        <ul id="userList" class="user-list">
+            <li class="user-list-placeholder">Loading users...</li>
+        </ul>
+    </div>
+
+    <!-- Chat Message Box -->
+    <div id="chatSidebar" class="chat-sidebar">
+        <div class="chat-header">
+            <span id="chatRecipientName">Select a user to chat</span>
+            <button id="closeChat" class="close-chat">&times;</button>
+        </div>
+        <div id="chatMessages" class="chat-messages">
+            <p class="chat-placeholder">Your messages will appear here.</p>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="Type a message..." disabled/>
+            <button id="sendBtn" class="btn-send" disabled>Send</button>
+        </div>
+    </div>
+</div>
+<script>
+   
+
+    document.getElementById('chatIcon').addEventListener('click', () => {
+    chatSidebarEl.classList.toggle('open');
+});
+// Chat icon toggle
+const chatIconEl = document.getElementById('chatIcon');
+const chatMainContainerEl = document.querySelector('.chat-main-container');
+
+chatIconEl.addEventListener('click', () => {
+    chatMainContainerEl.classList.toggle('open');
+});
+chatIconEl.addEventListener('click', () => {
+    if (currentReceiverId) {
+        chatMainContainerEl.classList.toggle('open');
+    } else {
+        alert("Select a user first to start chatting.");
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Configuration and State ---
+    const API_BASE_URL = 'http://localhost:3000';
+    const CURRENT_USER_ID = localStorage.getItem('currentUserId');
+    const CURRENT_USER_NAME = localStorage.getItem('currentUserName');
+
+    let currentReceiverId = null;
+    let socket = null;
+
+    // --- Authentication Check ---
+    if (!CURRENT_USER_ID || !CURRENT_USER_NAME) {
+        alert('Session expired or user data not found. Please log in again.');
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // --- DOM Elements ---
+    document.getElementById('welcomeHeader').textContent = `Welcome, ${CURRENT_USER_NAME}!`;
+    const userListEl = document.getElementById('userList');
+    const chatSidebarEl = document.getElementById('chatSidebar');
+    const chatRecipientNameEl = document.getElementById('chatRecipientName');
+    const chatMessagesEl = document.getElementById('chatMessages');
+    const chatInputEl = document.getElementById('chatInput');
+    const sendBtnEl = document.getElementById('sendBtn');
+    const closeChatBtnEl = document.getElementById('closeChat');
+
+    // --- Core Functions ---
+
+    /**
+     * Connects to WebSocket server and sets up listeners.
+     */
+    function connectToSocket() {
+        socket = io(API_BASE_URL);
+
+        socket.on('connect', () => {
+            console.log('Connected to WebSocket server!');
+            // Join a room specific to this user to receive private messages
+            socket.emit('join_chat', CURRENT_USER_ID);
+        });
+
+        // Listen for new messages from the server
+        socket.on('new_message', (message) => {
+            // Only display the message if it's part of the currently active chat
+            if (message.sender_id == currentReceiverId || message.sender_id == CURRENT_USER_ID) {
+                displayMessage(message);
+            }
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from WebSocket server.');
+        });
+    }
+
+    /**
+     * Fetches all users and populates the sidebar list.
+     */
+    async function fetchAndDisplayUsers() {
+        try {
+            // FIX: Pass the current user's ID to the backend to exclude them from the list
+            const response = await fetch(`${API_BASE_URL}/users?currentUserId=${CURRENT_USER_ID}`);
+            if (!response.ok) throw new Error('Failed to fetch users');
+            
+            const users = await response.json();
+            userListEl.innerHTML = ''; // Clear placeholder
+
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.className = 'user-item';
+                li.innerHTML = `<strong>${user.name}</strong> <span class="role">(${user.role})</span>`;
+                li.setAttribute('data-user-id', user.user_id);
+                li.addEventListener('click', () => openChat(user.user_id, user.name));
+                userListEl.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Failed to fetch user list:', error);
+            userListEl.innerHTML = '<li class="user-list-placeholder error">Error loading users.</li>';
+        }
+    }
+
+    /**
+     * Initializes chat with a selected user.
+     */
+    async function openChat(userId, userName) {
+        if (currentReceiverId === userId) return;
+
+        currentReceiverId = userId;
+
+        document.querySelectorAll('.user-item').forEach(item => item.classList.remove('active'));
+        document.querySelector(`[data-user-id='${userId}']`).classList.add('active');
+
+        chatRecipientNameEl.textContent = `Chat with ${userName}`;
+        chatInputEl.disabled = false;
+        sendBtnEl.disabled = false;
+        chatSidebarEl.classList.add('open');
+        chatMessagesEl.innerHTML = ''; 
+
+        // Load historical messages
+        await loadMessages();
+    }
+
+    /**
+     * Fetches and displays historical messages for the current conversation.
+     */
+    async function loadMessages() {
+        if (!currentReceiverId) return;
+        try {
+            const url = `${API_BASE_URL}/messages/get/${CURRENT_USER_ID}/${currentReceiverId}`;
+            const res = await fetch(url);
+            const messages = await res.json();
+            
+            chatMessagesEl.innerHTML = '';
+            messages.forEach(displayMessage);
+        } catch (error) {
+            console.error('Error loading messages:', error);
+        }
+    }
+    
+    /**
+     * Appends a single message to the chat window.
+     */
+    function displayMessage(message) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('chat-message');
+        msgDiv.classList.add(message.sender_id == CURRENT_USER_ID ? 'user-message' : 'other-message');
+        msgDiv.textContent = message.message_text;
+        chatMessagesEl.appendChild(msgDiv);
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+    }
+
+    /**
+     * Sends a message via API POST request.
+     */
+    async function sendMessage() {
+        const messageText = chatInputEl.value.trim();
+        if (messageText === "" || !currentReceiverId) return;
+
+        try {
+            const payload = {
+                sender_id: parseInt(CURRENT_USER_ID),
+                receiver_id: parseInt(currentReceiverId),
+                message_text: messageText
+            };
+
+            await fetch(`${API_BASE_URL}/messages/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            
+            chatInputEl.value = ''; // Clear input field
+            chatInputEl.focus();
+
+        } catch (error) {
+            console.error('Network error sending message:', error);
+            alert('An error occurred while sending the message.');
+        }
+    }
+
+    // --- Event Listeners ---
+    closeChatBtnEl.addEventListener('click', () => {
+        chatSidebarEl.classList.remove('open');
+        currentReceiverId = null;
+        document.querySelectorAll('.user-item').forEach(item => item.classList.remove('active'));
+    });
+
+    sendBtnEl.addEventListener('click', sendMessage);
+    chatInputEl.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+    });
+
+    // --- Initialization ---
+    fetchAndDisplayUsers();
+    connectToSocket();
+});
+
+</script>
+
+    <footer class="footer">
+        <p>&copy; 2025 Alumni Student Management System. All rights reserved.</p>
+    </footer>
+</body>
+</html>
